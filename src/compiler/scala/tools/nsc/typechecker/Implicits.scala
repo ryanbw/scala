@@ -926,12 +926,13 @@ trait Implicits {
       if (implicitInfoss.forall(_.isEmpty)) SearchFailure
       else new ImplicitComputation(implicitInfoss, isLocal) findBest()
 
-    /** Produce an implicict info map, i.e. a map from the class symbols C of all parts of this type to
+    /** Produce an implicit info map, i.e. a map from the class symbols C of all parts of this type to
      *  the implicit infos in the companion objects of these class symbols C.
      * The parts of a type is the smallest set of types that contains
      *    - the type itself
      *    - the parts of its immediate components (prefix and argument)
      *    - the parts of its base types
+     *    - the parts of any annotations on the type
      *    - for alias types and abstract types, we take instead the parts
      *    - of their upper bounds.
      *  @return For those parts that refer to classes with companion objects that
@@ -1020,7 +1021,8 @@ trait Implicits {
             getParts(restpe)
           case RefinedType(ps, _) =>
             for (p <- ps) getParts(p)
-          case AnnotatedType(_, t, _) =>
+          case AnnotatedType(ais, t, _) =>
+            for (ai <- ais) getParts(ai.atp)
             getParts(t)
           case ExistentialType(_, t) =>
             getParts(t)
